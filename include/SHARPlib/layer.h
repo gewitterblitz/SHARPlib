@@ -70,7 +70,9 @@ struct HeightLayer {
     /**
      * \brief The coordinate system of the layer
      */
+    
     static constexpr LayerCoordinate coord = LayerCoordinate::height;
+    
 
     /**
      * \brief Constructs a sharp::HeightLayer
@@ -175,16 +177,12 @@ template <typename L, typename Cb, typename Ct>
                                                    const int N,
                                                    const Cb bottom_comp,
                                                    const Ct top_comp) {
-    // bounds check out search!
-    if (bottom_comp(layer.bottom, coord[0])) {
-        layer.bottom = coord[0];
-    }
     if (top_comp(layer.top, coord[N - 1])) {
         layer.top = coord[N - 1];
     }
 
-    // whether pressure or height coordiantes, the bottom
-    // comparitor passed to the function will determine
+    // whether pressure or height coordinates, the bottom
+    // comparator passed to the function will determine
     // how to search
     int lower_idx = lower_bound(coord, N, layer.bottom, bottom_comp);
     int upper_idx = upper_bound(coord, N, layer.top, bottom_comp);

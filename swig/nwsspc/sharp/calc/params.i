@@ -4,6 +4,46 @@
     #define SWIG_FILE_WITH_INIT
     #include <SHARPlib/parcel.h>
     #include <SHARPlib/params/convective.h>
+    #include <SHARPlib/thermo.h>
+%}
+
+// Handle namespaces and classes properly
+%include <std_string.i>
+%include "carrays.i"
+
+// Import the namespace
+%import "../include/SHARPlib/layer.h"
+
+// Use typemaps to handle HeightLayer and PressureLayer properly 
+%typemap(in) sharp::HeightLayer {
+    sharp::HeightLayer* ptr;
+    int res = SWIG_ConvertPtr($input, (voicd**)&ptr, $descriptor(sharp::HeightLayer*), 0);
+    if (!SWIG_IsOK(res)) {
+        SWIG_exception_fail(SWIG_ArgError(res), "Expected HeightLayer");
+    }
+    $1 = *ptr;
+}
+
+%typemap(in) sharp::PressureLayer {
+    sharp::PressureLayer* ptr;
+    int res = SWIG_ConvertPtr($input, (void**)&ptr, $descriptor(sharp::PressureLayer*), 0);
+    if (!SWIG_IsOK(res)) {
+        SWIG_exception_fail(SWIG_ArgError(res), "Expected PressureLayer");
+    }
+    $1 = *ptr;
+}
+
+// Handle the sharp::adiabat enum class
+%include "../include/SHARPlib/thermo.h"
+
+// Convert the enum class to a proper Python enum
+%pythoncode %{
+from enum import IntEnum
+class adiabat(IntEnum):
+    pseudo_liq = 1
+    adiab_liq = 2
+    pseudo_ice = 3
+    adiab_ice = 4
 %}
 
 %include exception.i
@@ -65,13 +105,13 @@ sharp::PressureLayer _effective_inflow_layer(
                         sharp::Parcel* mupcl = NULL,
                         const float cape_thresh = 100.0,
                         const float cinh_thresh = -250.0) {
-	if ( (N1 != N2) || (N1 != N3) || (N1 != N4) || (N1 != N5) ) {
+    if ( (N1 != N2) || (N1 != N3) || (N1 != N4) || (N1 != N5) ) {
         PyErr_Format(PyExc_ValueError, 
-            "Arrays must be same lenght, insead got (%d, %d, %d, %d, %d)",
+            "Arrays must be same length, instead got (%d, %d, %d, %d, %d)",
             N1, N2, N3, N4, N5
         );
         return {sharp::MISSING, sharp::MISSING};
-	}
+    }
 
     /*Allocate temporary array for holding Buoyancy*/
     float* buoy = (float *)malloc(N1*sizeof(float));
@@ -102,7 +142,7 @@ sharp::WindComponents _storm_motion_bunkers(
                             const bool pressureWeighted = false) {
     if ((N1 != N2) || (N1 != N3) || (N1 != N4)) {
         PyErr_Format(PyExc_ValueError, 
-            "Arrays must be same lenght, insead got (%d, %d, %d, %d)",
+            "Arrays must be same length, instead got (%d, %d, %d, %d)",
             N1, N2, N3, N4
         );
         return {sharp::MISSING, sharp::MISSING};
@@ -123,7 +163,7 @@ sharp::WindComponents _storm_motion_bunkers(
                             const bool leftMover=false) {
     if ((N1 != N2) || (N1 != N3) || (N1 != N4)) {
         PyErr_Format(PyExc_ValueError, 
-            "Arrays must be same lenght, insead got (%d, %d, %d, %d)",
+            "Arrays must be same length, instead got (%d, %d, %d, %d)",
             N1, N2, N3, N4
         );
         return {sharp::MISSING, sharp::MISSING};
@@ -139,20 +179,20 @@ float _entrainment_cape(const float pressure[], const int N1,
                         const float u_wind[], const int N5,
                         const float v_wind[], const int N6,
                         sharp::Parcel* pcl) {
-	if ( (N1 != N2) || (N1 != N3) || (N1 != N4) || (N1 != N5) || (N1 != N6) ) {
+    if ( (N1 != N2) || (N1 != N3) || (N1 != N4) || (N1 != N5) || (N1 != N6) ) {
         PyErr_Format(PyExc_ValueError, 
-            "Arrays must be same lenght, insead got (%d, %d, %d, %d, %d, %d)",
+            "Arrays must be same length, instead got (%d, %d, %d, %d, %d, %d)",
             N1, N2, N3, N4, N5, N6
         );
         return sharp::MISSING; 
-	}
-        return sharp::entrainment_cape(pressure, height, temperature, mse_arr,
-                                       u_wind, v_wind, N1, pcl);
+    }
+    return sharp::entrainment_cape(pressure, height, temperature, mse_arr,
+                                   u_wind, v_wind, N1, pcl);
 }
 
 %} /* end inline */
 
-%import "../include/SHARPlib/layer.h"
-%import "../include/SHARPlib/winds.h"
-%import "../include/SHARPlib/parcel.h"
+%include "../include/SHARPlib/layer.h"
+%include "../include/SHARPlib/winds.h"
+%include "../include/SHARPlib/parcel.h"
 %include "../include/SHARPlib/params/convective.h"
